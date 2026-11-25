@@ -1,38 +1,53 @@
-# FinSight: 딥러닝 기반 주가 예측 서비스
+# FinSight: 딥러닝 주가 예측 서비스
 
-> 종목마다 가장 잘 맞는 모델·데이터셋·기간 조합을 찾아 예측하고, 웹과 텔레그램 봇으로 제공하는 서비스
+LSTM, GRU, Transformer, XGBoost를 같은 조건에서 학습하고 튜닝해 RMSE로 비교, 종목별로 고른 모델로 예측을 제공하는 서비스
 
-| 항목 | 내용 |
-|---|---|
-| 기간 | 2024.07 – 2024.08 |
-| 과정 | 아시아경제 「빅데이터 기반 비즈니스 모델 맞춤형 AI솔루션 개발」 |
-| 팀 | 3인 팀 · **정영균(팀장)**, 백승주, 박영진 |
-| 기술 | Python, TensorFlow(Keras), XGBoost, scikit-learn, yfinance, FRED API, Streamlit, Telegram Bot |
+**포트폴리오**: [suipizza.github.io/projects/finsight.html](https://suipizza.github.io/projects/finsight.html)
 
-<br>
+<img src="Doc/readme/fin_web_home.png" alt="FinSight 웹 서비스 첫 화면" width="820">
+
+| 기간 | 형태 | 기술 |
+|---|---|---|
+| 2024.07 – 08 | 3인 팀 (아시아경제 빅데이터 AI솔루션 개발 과정) | Python, TensorFlow(Keras), XGBoost, scikit-learn, yfinance, FRED API, Streamlit, Telegram Bot |
 
 ## 문제
-종목마다 가격을 움직이는 요인이 달라서, 하나의 모델로 모든 종목을 예측하기는 어렵다고 봤습니다. 종목별로 가장 잘 맞는 모델과 데이터 조합을 찾아 예측하는 것을 목표로 했습니다.
 
-## 내 역할 (팀장)
-- 프로젝트를 이끌며 모델 구현을 기획하고 직접 구현
-- 기술지표(RSI, MACD, 볼린저밴드, 거래량)와 외부지표(금리, 달러 인덱스, 장단기 금리차)로 데이터셋 3종 구성
-- LSTM·GRU·Transformer·XGBoost × 데이터셋 3종 × 기간 2종을 RMSE로 비교
-- 매주 다음 주 예측을 자동 전송하는 텔레그램 봇 구현
+- 종목마다 가격을 움직이는 요인이 달라, 하나의 모델로 모든 종목을 예측하기 어렵다고 판단
+- 종목별로 잘 맞는 모델과 데이터 조합을 같은 조건에서 비교해 고르는 방식으로 접근
 
-## 접근
-1. **데이터 수집**: yfinance로 주가와 기술지표, FRED API로 거시 지표 수집
-2. **데이터셋 구성**: 기술지표 / 외부지표 / 둘을 합친 데이터셋 3종
-3. **모델 비교**: LSTM, GRU, Transformer, XGBoost를 같은 데이터·기간·지표(RMSE)로 비교하고, GRU는 하이퍼파라미터(층, 유닛, 드롭아웃, 배치, 에폭)를 튜닝
-4. **서비스**: 종목별 최적 조합을 저장해 Streamlit 웹과 텔레그램 봇으로 제공
+## 실험 설계
 
-## 결과
-- 대상 4개 종목(AAPL, KO, JNJ, JPM)에서 **GRU + 5년 데이터** 조합이 가장 좋은 성능
-- 종목에 따라 최적 데이터셋이 달랐음 (JPM은 금리 등 외부지표를 포함한 데이터셋)
-- 예측 결과를 Streamlit 웹과 텔레그램 봇(매주 일요일 다음 주 예측 전송)으로 제공
+- 기술지표(RSI, MACD, 볼린저밴드, 거래량), 외부지표(금리, 달러 인덱스, 장단기 금리차)로 데이터셋 3종 구성
+- 모델 4종, 데이터셋 3종, 학습 기간 2종을 종목별로 비교하고 RMSE로 평가 통일
+- batch size, units, layers, dropout, epochs 튜닝
+
+<img src="Doc/readme/fin_arch.png" alt="전체 구조" width="820">
+
+*전체 구조: 데이터 수집, 데이터셋 구성, 모델 비교, 서비스*
+
+<img src="Doc/readme/fin_flow.png" alt="실험 흐름" width="820">
+
+*실험 흐름: 모델 4종 × 데이터셋 3종 × 기간 2종, 튜닝 후 RMSE로 최종 모델 선택*
+
+## 내 역할
+
+- 프로젝트 리딩과 실험 설계
+- 모델 구현, 하이퍼파라미터 튜닝, 결과 분석
+- 매주 다음 주 예측을 보내는 텔레그램 봇 구현
+
+## 화면
+
+<img src="Doc/readme/fin_web_rmse.png" alt="모델 성능 비교 화면" width="820">
+
+*웹 서비스의 모델 성능 비교 화면 (Streamlit)*
+
+<img src="Doc/readme/fin_web_pred.png" alt="종목별 예측 화면" width="820">
+
+*종목별 예측 화면*
 
 ## 배운 점
-복잡한 모델이 항상 더 좋은 결과를 내지는 않았습니다. 같은 데이터와 지표로 여러 조합을 나란히 비교해야 차이가 어디서 오는지 판단할 수 있다는 것을 배웠습니다.
+
+- 복잡한 모델이 항상 더 좋은 결과를 내지는 않음. 같은 데이터와 지표로 여러 조합을 나란히 비교해야 차이가 어디서 오는지 판단 가능
 
 ## 폴더 구조
 ```text
@@ -45,9 +60,8 @@ FinSight
 ```
 
 ## AI 활용
-- ChatGPT로 코드 작성과 오류 수정
 
-<br>
+- ChatGPT로 코드 작성과 오류 수정
 
 <details>
 <summary><b>발표 자료 보기 (34장)</b></summary>
